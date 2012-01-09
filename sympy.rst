@@ -1,0 +1,2 @@
+Cálculo simbólico con Sympy.
+============================
