@@ -242,7 +242,6 @@ def test_kh(fign,Lx,Ly,nsteps):
     pylab.figure(fign+1)
     pylab.clf()
     pylab.imshow(V.result(),cmap=pylab.cm.RdBu)
-    pylab.quiver(*V.velocities())
 
     return V
 
