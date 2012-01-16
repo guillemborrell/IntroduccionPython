@@ -124,7 +124,8 @@ class Vorticity2D(object):
             
         self.t += self.dt
         
-    def result(self):
+    @property
+    def omega(self):
         """
         Transforms vorticity from Fourier to physical space to make
         pretty plots.
@@ -145,8 +146,17 @@ class Vorticity2D(object):
         return (numpy.fft.ifft2(u_hat).real,
                 numpy.fft.ifft2(v_hat).real)
 
+    def corr2d(self):
+        """
+        Returns the array of non shifted 2d correlations.
+        """
+        corr = numpy.fft.ifft2(
+            numpy.conjugate(self.omega_hat)*self.omega_hat).real
 
-def test_tur2d(fign,Lx,Ly):
+        return corr / corr.max()
+
+
+def test_tur2d(fign,Lx,Ly,nsteps):
     """Test a vortex soup"""
 
     Re = 10000
@@ -186,22 +196,20 @@ def test_tur2d(fign,Lx,Ly):
     V.set_initial(omega)
     V.t = 0
 
-    nsteps = 1000
     for i in range(nsteps):
         V.step()
         if i%100 == 0:
             print i,'/',nsteps
 
-
     pylab.figure(fign+1)
     pylab.clf()
-    pylab.imshow(V.result(),cmap=pylab.cm.RdBu)
+    pylab.imshow(V.omega,cmap=pylab.cm.RdBu)
     pylab.colorbar()
 
     return V
 
 
-def test_kh(fign,Lx,Ly):
+def test_kh(fign,Lx,Ly,nsteps):
     """Test a Kelvin-Helmholtz instability"""
     Re = 10000
     CFL = 0.2
@@ -225,7 +233,7 @@ def test_kh(fign,Lx,Ly):
 
     V.set_initial(omega)
     V.t = 0
-    nsteps = 1000
+
     for i in range(nsteps):
         V.step()
         if i%100 == 0:
@@ -239,7 +247,7 @@ def test_kh(fign,Lx,Ly):
     return V
 
 if __name__ == '__main__':
-    #Vort = test_tur2d(1,2.0,2.0)
-    KH = test_kh(3,4.0,4.0)
+    Vort = test_tur2d(1,4.0,4.0,4000)
+    #KH = test_kh(3,4.0,4.0)
 
     pylab.show()
