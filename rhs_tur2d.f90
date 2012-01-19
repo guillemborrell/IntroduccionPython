@@ -238,11 +238,6 @@ module rhs_tur2d
       end do
       !$END OMP PARALLEL DO
 
-      !$OMP PARALLEL PRIVATE(n)
-      n = omp_get_num_threads()
-      write(*,*) 'Number of threads = ', n
-      !$OMP END PARALLEL
-
       call fftw_destroy_plan(planu)
       call fftw_destroy_plan(planv)
       call fftw_destroy_plan(planox)

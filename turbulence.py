@@ -181,7 +181,12 @@ class Vorticity2DSerial(Vorticity2D):
 
     def FW(self):
         rhs,u,v = rhs_tur2d.fw_fortran_serial(self.S1)
-        return (rhs,u.real,v.real)
+        
+        ## Renormalize the fft here because u and v are computed in
+        ## The Fortran part.
+        return (rhs,
+                u.real/(self.nx*self.ny),
+                v.real/(self.nx*self.ny))
 
     def step(self):
         """
@@ -212,7 +217,7 @@ def test_tur2d(fign,Lx,Ly,nsteps):
 
     Re = 10000
     CFL = 0.2
-    V = Vorticity2D(Lx,Ly,Re,CFL)
+    V = Vorticity2DSerial(Lx,Ly,Re,CFL)
     # Genera la distribución inicial
 
     x,y = numpy.meshgrid(numpy.linspace(-Lx/2,Lx/2,V.nx),
