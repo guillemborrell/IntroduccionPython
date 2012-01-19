@@ -2,7 +2,15 @@
 
 
 from __future__ import division
-import numpy,pylab
+import numpy
+from datetime import datetime
+
+try:
+    from rhs_tur2d import rhs_tur2d
+    print "Imported the Fortran implementation of the right hand side"
+except ImportError as err:
+    print "Extension module not successfully imported"
+    print err
 
 class Vorticity2D(object):
     """                                                    
@@ -67,9 +75,8 @@ class Vorticity2D(object):
         self.S1 = numpy.zeros(self.omega_hat.shape,dtype='complex')
         
         # Useful to create initial conditions
-        self.nx = nx
-        self.ny = ny
-        
+        self.nx = int(nx)
+        self.ny = int(ny)
 
     def set_initial(self,omega):
         """
@@ -79,13 +86,14 @@ class Vorticity2D(object):
         """
         self.omega_hat = numpy.fft.fft2(omega)
         self.omega_hat = self.dealias*self.omega_hat
-    
-    def __FW(self):
+            
+
+    def FW(self):
         """
         Solve the right hand side, both linear and nonlinear terms
         """
         # Solve poisson equation for psi
-        psi_hat = -self.omega_hat/self.poisson
+        psi_hat = -self.S1/self.poisson
         
         # compute u,v
         u_hat = 1j*self.ky*psi_hat
@@ -94,13 +102,13 @@ class Vorticity2D(object):
         # convective terms
         u       = numpy.fft.ifft2(u_hat).real
         v       = numpy.fft.ifft2(v_hat).real
-        omega_x = numpy.fft.ifft2(1j*self.kx*self.omega_hat).real
-        omega_y = numpy.fft.ifft2(1j*self.ky*self.omega_hat).real
+        omega_x = numpy.fft.ifft2(1j*self.kx*self.S1).real
+        omega_y = numpy.fft.ifft2(1j*self.ky*self.S1).real
         conv    = u*omega_x + v*omega_y
         conv_hat = numpy.fft.fft2(conv)
         conv_hat = self.dealias*conv_hat
         
-        return (self.Lap*self.omega_hat/self.Re-conv_hat,u,v)
+        return (self.Lap*self.S1/self.Re-conv_hat,u,v)
         
         
     def step(self):
@@ -111,7 +119,7 @@ class Vorticity2D(object):
         is evaluated at the first substep.
         """
         self.S1 = self.omega_hat+(self.a[0]-self.b[0])*self.dt*self.S1
-        self.S1,u,v = self.__FW()
+        self.S1,u,v = self.FW()
         vmax = numpy.sqrt(u**2+v**2).max()
         self.dt = numpy.min([self.dtv,self.CFL*self.dl/vmax,0.5])
         self.omega_hat = self.omega_hat+self.b[1]*self.dt*self.S1
@@ -119,10 +127,11 @@ class Vorticity2D(object):
         # Rest of Runge Kutta substeps
         for i in range(1,4):
             self.S1 = self.omega_hat+(self.a[i]-self.b[i])*self.dt*self.S1
-            self.S1 = self.__FW()[0]
+            self.S1 = self.FW()[0]
             self.omega_hat = self.omega_hat+self.b[i+1]*self.dt*self.S1
             
         self.t += self.dt
+
         
     @property
     def omega(self):
@@ -156,6 +165,48 @@ class Vorticity2D(object):
         return corr / corr.max()
 
 
+class Vorticity2DSerial(Vorticity2D):
+    """
+    Class Vorticity 2D extended with fortran. Serial version of FFTW
+    used. Requires the rhs_tur2d module properly compiled.
+    """
+    def __init__(self,Lx,Ly,Re,CFL):
+        Vorticity2D.__init__(self,Lx,Ly,Re,CFL)
+        rhs_tur2d.nx__ = self.nx
+        rhs_tur2d.ny__ = self.ny
+        rhs_tur2d.lx__ = Lx
+        rhs_tur2d.ly__ = Ly
+        rhs_tur2d.re__ = Re
+
+
+    def FW(self):
+        rhs,u,v = rhs_tur2d.fw_fortran_serial(self.S1)
+        return (rhs,u.real,v.real)
+
+    def step(self):
+        """
+        Integrates a single Runge Kutta time step. Calls the Fortran
+        optimized routine.
+        
+        It uses a fourth order low-storage RK scheme and the timestep
+        is evaluated at the first substep.
+        """
+        self.S1 = self.omega_hat+(self.a[0]-self.b[0])*self.dt*self.S1
+        self.S1,u,v = self.FW()
+        vmax = numpy.sqrt(u**2+v**2).max()
+        self.dt = numpy.min([self.dtv,self.CFL*self.dl/vmax,0.5])
+        self.omega_hat = self.omega_hat+self.b[1]*self.dt*self.S1
+        
+        # Rest of Runge Kutta substeps
+        for i in range(1,4):
+            self.S1 = self.omega_hat+(self.a[i]-self.b[i])*self.dt*self.S1
+            self.S1 = self.FW()[0]
+            self.omega_hat = self.omega_hat+self.b[i+1]*self.dt*self.S1
+            
+        self.t += self.dt
+
+
+
 def test_tur2d(fign,Lx,Ly,nsteps):
     """Test a vortex soup"""
 
@@ -186,12 +237,6 @@ def test_tur2d(fign,Lx,Ly,nsteps):
                                         (y+(j-nvy)*Ly/nvy+Lx/2+Ly/nvy/2)**2))
 
             
-    pylab.figure(fign)
-    pylab.clf()
-    pylab.imshow(omega,cmap=pylab.cm.RdBu)
-    pylab.colorbar()
-    pylab.title('Configuracion inicial')
-
 
     V.set_initial(omega)
     V.t = 0
@@ -201,11 +246,6 @@ def test_tur2d(fign,Lx,Ly,nsteps):
         if i%100 == 0:
             print i,'/',nsteps
 
-    pylab.figure(fign+1)
-    pylab.clf()
-    pylab.imshow(V.omega,cmap=pylab.cm.RdBu)
-    pylab.colorbar()
-
     return V
 
 
@@ -214,7 +254,7 @@ def test_kh(fign,Lx,Ly,nsteps):
     Re = 10000
     CFL = 0.2
 
-    V = Vorticity2D(Lx,Ly,Re,CFL)
+    V = Vorticity2DSerial(Lx,Ly,Re,CFL)
     # Uniform grid mesh
     x,y = numpy.meshgrid(numpy.linspace(-Lx/2,Lx/2,V.nx),
                          numpy.linspace(-Ly/2,Ly/2,V.ny))
@@ -225,28 +265,18 @@ def test_kh(fign,Lx,Ly,nsteps):
     omega = (1+0.1*numpy.cos(numpy.pi*x[0]))*numpy.exp(-300*(y+Ly/4.)**2)
     omega += -(1+0.1*numpy.cos(numpy.pi*x[0]))*numpy.exp(-300*(y-Ly/4.)**2)
         
-    pylab.figure(fign)
-    pylab.clf()
-    pylab.imshow(omega,cmap=pylab.cm.RdBu)
-    pylab.colorbar()
-    pylab.title('Configuracion inicial')
 
     V.set_initial(omega)
     V.t = 0
 
-    for i in range(nsteps):
-        V.step()
-        if i%100 == 0:
-            print i,'/',nsteps
+    # for i in range(nsteps):
+    #     V.step()
+    #     if i%100 == 0:
+    #         print i,'/',nsteps,datetime.now().isoformat()
 
-    pylab.figure(fign+1)
-    pylab.clf()
-    pylab.imshow(V.result(),cmap=pylab.cm.RdBu)
 
     return V
 
 if __name__ == '__main__':
-    Vort = test_tur2d(1,4.0,4.0,4000)
-    #KH = test_kh(3,4.0,4.0)
 
-    pylab.show()
+    vort = test_tur2d(1,2.0,2.0,200)
