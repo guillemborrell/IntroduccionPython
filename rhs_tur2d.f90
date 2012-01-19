@@ -16,6 +16,17 @@ module rhs_tur2d
     !!!! ACHTUNG
     !!!! These helper functions depend on Fortran Indexing.
 
+    function init()
+      use, intrinsic :: iso_c_binding
+      implicit none
+      include 'fftw3.f03'
+      integer:: init
+      
+      init = fftw_init_threads()
+
+    end function init
+
+
     function kx(i,j)
       implicit none
       !Compute the kx wavenumbers
@@ -189,8 +200,7 @@ module rhs_tur2d
       include 'fftw3.f03'
 
       integer, intent(in):: nx,ny
-      integer:: omp_get_num_threads
-      integer:: n
+      integer:: n,omp_get_num_threads
       complex(kind = 8), dimension(nx,ny), intent(in):: omega_hat
       complex(kind = 8), dimension(nx,ny), intent(out):: rhs,u,v
 
@@ -202,7 +212,9 @@ module rhs_tur2d
 
       integer:: i,j
       type(c_ptr):: planu,planv,planox,planoy,planconv
-      
+
+      call fftw_plan_with_nthreads(omp_get_num_threads())
+            
       planu = fftw_plan_dft_2d(ny,nx,u_hat,u,FFTW_BACKWARD,FFTW_ESTIMATE)
       planv = fftw_plan_dft_2d(ny,nx,v_hat,v,FFTW_BACKWARD,FFTW_ESTIMATE)
       planox = fftw_plan_dft_2d(ny,nx,omega_x_hat,omega_x,&
@@ -245,5 +257,15 @@ module rhs_tur2d
       call fftw_destroy_plan(planconv)
 
     end subroutine fw_fortran_serial
+
+    function cleanup()
+      use, intrinsic :: iso_c_binding
+      implicit none
+      include 'fftw3.f03'
+      integer:: cleanup
+      
+      call fftw_cleanup_threads()
+    end function cleanup
+
 
 end module rhs_tur2d

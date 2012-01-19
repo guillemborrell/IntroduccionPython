@@ -179,6 +179,8 @@ class Vorticity2DSerial(Vorticity2D):
         rhs_tur2d.re__ = Re
 
 
+        rhs_tur2d.init()
+
     def FW(self):
         rhs,u,v = rhs_tur2d.fw_fortran_serial(self.S1)
         
@@ -225,8 +227,8 @@ def test_tur2d(fign,Lx,Ly,nsteps):
 
     ### Sopa de vórtices. 2-3 segundos por paso.
     omega = numpy.zeros(x.shape)
-    nvx= numpy.int(2*Lx);
-    nvy= numpy.int(2*Ly);
+    nvx= numpy.int(Lx);
+    nvy= numpy.int(Ly);
     vii=2;
     rii=30;
     
@@ -284,4 +286,4 @@ def test_kh(fign,Lx,Ly,nsteps):
 
 if __name__ == '__main__':
 
-    vort = test_tur2d(1,2.0,2.0,200)
+    vort = test_tur2d(1,16.0,16.0,2000)
