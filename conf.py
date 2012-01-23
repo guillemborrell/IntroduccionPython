@@ -156,7 +156,7 @@ html_static_path = ['_static']
 #html_show_sphinx = True
 
 # If true, "(C) Copyright ..." is shown in the HTML footer. Default is True.
-#html_show_copyright = True
+html_show_copyright = "(C) Copyright 2011-2012 Guillem Borrell i Nogueras. Para obtener ediciones con licencias permisivas contactar con el autor."
 
 # If true, an OpenSearch description file will be output, and all pages will
 # contain a <link> tag referring to it.  The value of this option must be the
@@ -173,7 +173,7 @@ htmlhelp_basename = 'IntroduccinaPythonparaingenierosdoc'
 # -- Options for LaTeX output --------------------------------------------------
 
 # The paper size ('letter' or 'a4').
-#latex_paper_size = 'letter'
+latex_paper_size = 'a4'
 
 # The font size ('10pt', '11pt' or '12pt').
 #latex_font_size = '10pt'
@@ -181,7 +181,7 @@ htmlhelp_basename = 'IntroduccinaPythonparaingenierosdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'IntroduccinaPythonparaingenieros.tex', u'Introducción a Python para ingenieros Documentation',
+  ('index', 'IntroduccinaPythonparaingenieros.tex', u'Introducción a Python para ingenieros',
    u'Guillem Borrell', 'manual'),
 ]
 
@@ -214,6 +214,6 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'introduccinapythonparaingenieros', u'Introducción a Python para ingenieros Documentation',
+    ('index', 'introduccinapythonparaingenieros', u'Introducción a Python para ingenieros',
      [u'Guillem Borrell'], 1)
 ]

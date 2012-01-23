@@ -1,7 +1,7 @@
 from random import choice
 
 if __name__ == '__main__':
-    (pos,nil,neg) = (0,0,0)
+    (pos,nil,neg) = (0,0,0) # Multiple assignment
     while pos<10 and nil<10 and neg<10:
         num = choice([-1,0,1])
         if num == 0:

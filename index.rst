@@ -21,6 +21,7 @@ en Python. Es, por consiguiente, un curso de mínimos.
    flujo
    funciones
    tipos
+   clases
    stdlib
    array
    scipy

@@ -1,5 +1,5 @@
-Control de flujo y encapsulamiento
-==================================
+Control de flujo
+================
 
 Este capítulo no es más que una introducción sobre cómo hacer lo que
 se puede hacer con cualquier lenguaje de programación en Python.  El
@@ -32,7 +32,7 @@ el 0 entero y como verdadero cualquier otro valor se enfatiza como
 buena práctica que cualquier condicional debe evaluar una constante
 lógica que puede tener como valor ``True`` o ``False``.
 
-Otra peculiaridad es que no tenemos porqué pasar a la siguiente línea
+Otra peculiaridad es que no tenemos por qué pasar a la siguiente línea
 si después de la condición y los dos puntos sólo queremos escribir una
 línea.  De este modo estas dos sentencias son equivalentes a
 
@@ -99,6 +99,15 @@ con ``elif`` y complicar un poco la estructura:
 
 .. literalinclude:: _static/flujo3.py
    :language: python
+
+Lo que estamos haciendo con este script es tomar tres variables,
+``pos``, ``nil`` y ``neg`` que utilizaremos como contadores. La
+función ``choice`` escoge entre tres valores y dependiendo de si su
+valor es negativo, positivo o cero incrementa el contador
+correspondiente.  En este caso la condición complementaria ``else`` no
+tiene ningúna función porque las tres condiciones anteriores cubren
+todo el espacio de probabilidades pero lo he dejado ahí por si alguien
+tiene un ordenador que con una lógica alternativa.
 
 Como aún no hemos visto prácticamente nada de Python cualquier
 tontería nos parece novedosa.  Hay muchas cosas interesantes en este
@@ -298,3 +307,31 @@ que uno siempre se arrepiente de no haber conocido antes. Alguna de
 las utilidades de este módulo, al igual que algunos de los trucos que
 provienen de la programación funcional, ahorran muchas líneas de
 código y aceleran el resultado significativamente.
+
+.. important::
+
+   Uno de los problemas de obligar a formatear el código de una
+   determinada manera es el no poder dejar bloques vacíos.  Por
+   ejemplo:
+
+   .. code-block:: python
+
+      >>> while True:
+      ...    # Implement this later
+      
+          ^
+      IndentationError: expected an indented block
+
+   Vemos que, aunque hemos puesto el comentario precisamente donde
+   debíamos se queja que no es capaz de entender el bloque de
+   código. Esto es precisamente porque los comentarios no sirven para
+   marcar un bloque de código; son comentarios, no código.
+
+   Para dejar un bloque vacío contamos con la sentencia ``pass``
+
+   .. code-block:: python
+
+      >>> while True:
+      ...     pass # Implement this later
+
+   De este modo ya no generamos ningún error
