@@ -251,7 +251,7 @@ def test_tur2d(fign,Lx,Ly,nsteps):
     for i in range(nsteps):
         V.step()
         if i%100 == 0:
-            print i,'/',nsteps
+            print i,'/',nsteps,datetime.now().isoformat()
 
     return V
 
@@ -286,4 +286,4 @@ def test_kh(fign,Lx,Ly,nsteps):
 
 if __name__ == '__main__':
 
-    vort = test_tur2d(1,16.0,16.0,2000)
+    vort = test_tur2d(1,4.0,4.0,4000)

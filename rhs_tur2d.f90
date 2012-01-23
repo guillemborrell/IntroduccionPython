@@ -9,6 +9,9 @@ module rhs_tur2d
   integer:: nx__ = 64
   integer:: ny__ = 64
   integer:: Re__ = 10000
+  !f2py intent(hide) planu,planv,planox,planoy,planconv
+  type(c_ptr):: planu,planv,planox,planoy,planconv
+  logical:: planned = .false.
 
   contains
 
@@ -211,17 +214,24 @@ module rhs_tur2d
       complex(kind = 8), dimension(nx,ny):: conv
 
       integer:: i,j
-      type(c_ptr):: planu,planv,planox,planoy,planconv
 
       call fftw_plan_with_nthreads(omp_get_num_threads())
-            
-      planu = fftw_plan_dft_2d(ny,nx,u_hat,u,FFTW_BACKWARD,FFTW_ESTIMATE)
-      planv = fftw_plan_dft_2d(ny,nx,v_hat,v,FFTW_BACKWARD,FFTW_ESTIMATE)
-      planox = fftw_plan_dft_2d(ny,nx,omega_x_hat,omega_x,&
-           &FFTW_BACKWARD,FFTW_ESTIMATE)
-      planoy = fftw_plan_dft_2d(ny,nx,omega_y_hat,omega_y,&
-           &FFTW_BACKWARD,FFTW_ESTIMATE)
-      planconv = fftw_plan_dft_2d(ny,nx,conv,rhs,FFTW_FORWARD,FFTW_ESTIMATE)
+
+
+      if (planned .eqv. .false.) then
+         planu = fftw_plan_dft_2d(ny,nx,u_hat,u,FFTW_BACKWARD,&
+              & FFTW_EXHAUSTIVE + FFTW_DESTROY_INPUT)
+         planv = fftw_plan_dft_2d(ny,nx,v_hat,v,FFTW_BACKWARD,&
+              & FFTW_EXHAUSTIVE + FFTW_DESTROY_INPUT)
+         planox = fftw_plan_dft_2d(ny,nx,omega_x_hat,omega_x,&
+              & FFTW_BACKWARD,FFTW_EXHAUSTIVE + FFTW_DESTROY_INPUT)
+         planoy = fftw_plan_dft_2d(ny,nx,omega_y_hat,omega_y,&
+              & FFTW_BACKWARD,FFTW_EXHAUSTIVE + FFTW_DESTROY_INPUT)
+         planconv = fftw_plan_dft_2d(ny,nx,conv,rhs,&
+              & FFTW_FORWARD,FFTW_EXHAUSTIVE + FFTW_DESTROY_INPUT)
+         planned = .true.
+         write(*,*) "INFO: plans for fftw. Exhaustive and destroy input"
+      end if
 
       u_hat = u_hat_f(omega_hat,nx,ny)
       v_hat = v_hat_f(omega_hat,nx,ny)
@@ -250,12 +260,6 @@ module rhs_tur2d
       end do
       !$END OMP PARALLEL DO
 
-      call fftw_destroy_plan(planu)
-      call fftw_destroy_plan(planv)
-      call fftw_destroy_plan(planox)
-      call fftw_destroy_plan(planoy)
-      call fftw_destroy_plan(planconv)
-
     end subroutine fw_fortran_serial
 
     function cleanup()
@@ -265,6 +269,15 @@ module rhs_tur2d
       integer:: cleanup
       
       call fftw_cleanup_threads()
+
+      if (planned .eqv. .true.) then
+         call fftw_destroy_plan(planu)
+         call fftw_destroy_plan(planv)
+         call fftw_destroy_plan(planox)
+         call fftw_destroy_plan(planoy)
+         call fftw_destroy_plan(planconv)
+      end if
+
     end function cleanup
 
 
