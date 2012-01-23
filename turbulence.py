@@ -212,6 +212,8 @@ class Vorticity2DSerial(Vorticity2D):
             
         self.t += self.dt
 
+    def cleanup(self):
+        rhs_tur2d.cleanup()
 
 
 def test_tur2d(fign,Lx,Ly,nsteps):
@@ -253,6 +255,7 @@ def test_tur2d(fign,Lx,Ly,nsteps):
         if i%100 == 0:
             print i,'/',nsteps,datetime.now().isoformat()
 
+    V.cleanup()
     return V
 
 
@@ -286,4 +289,4 @@ def test_kh(fign,Lx,Ly,nsteps):
 
 if __name__ == '__main__':
 
-    vort = test_tur2d(1,4.0,4.0,4000)
+    vort = test_tur2d(1,4.0,4.0,200)

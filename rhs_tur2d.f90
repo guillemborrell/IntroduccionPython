@@ -278,6 +278,8 @@ module rhs_tur2d
          call fftw_destroy_plan(planconv)
       end if
 
+      write(*,*) "INFO: cleaning up threads and plans."
+
     end function cleanup
 
 
