@@ -405,3 +405,64 @@ agumentos ``a`` y ``d``? Pues con los diccionarios y el operador
    En la función anterior el argumento ``a`` es imprescindible. Sea
    cual sea la manera en la que escojamos introducir ese argumento no
    nos lo podemos olvidar o recibiremos un error.
+
+Funciones *lambda*
+------------------
+
+Una función *lambda* es una estructura que *en tiempo de ejecución*
+convierte una variable en una función con argumentos. Aunque algunos
+habrán visto este tipo de estructuras por primera vez en Matlab con
+los *function handles*, expresados por el símbolo ``@``, las funciones
+*lambda* son un invento de los años cincuenta.
+
+De hecho son un invento del primer lenguaje interpretado de la
+historia, *lisp* que es casi contemporáneo a Fortran y fue el primer
+lenguaje que utilizaba el paradigma funcional.  *Lisp* tuvo un gran
+arranque y se convirtió rápidamente en el lenguaje por excelencia en
+la investigación en inteligencia artificial pero como nunca se enseñó
+demasiado en las universidades cayó un poco en el olvido.
+
+El paradigma funcional sigue vivo en algunos lenguajes de programación
+modernos como Scheme o Haskell, incluso Python adopta algunas de las
+herramientas propias de la programación funcional.
+
+La estructura de una función *lambda* en Python conserva la forma que
+tenía en *lisp*:
+
+.. code-block:: python
+
+  >>> square = lambda x: x*x
+  >>> print square(3)
+  9
+
+Si necesitamos más de una variable
+
+.. code-block:: python
+
+  >>> prod = lambda x,y: x*y
+  >>> print prod(3,4)
+  12
+
+Las funciones *lambda* son muy útiles para definir funciones cortas
+que sólo usaremos una vez.
+
+Programación funcional
+----------------------
+
+Python no sigue el paradigma funcional pero reinterpreta algunas de
+sus características más útiles como son las funciones :func:`map` y
+:func:`reduce`
+
+La primera aplica una función dada a todos los elementos de una lista
+o secuencia y nos devuelve una lista con el resultado
+
+.. code-block:: python
+
+  >>> print map(lambda x:x[0]*x[1],[(1,2),(2,3),(3,4),(4,5)])
+  [2, 6, 12, 20]
+
+O podemos empezar a utilizar los módulos de la librería estándar para
+empezar a contestarnos preguntas que siempre quisimos formular.
+¿Cuánto suman cada una de las combinaciones con repetición de dos
+elementos de los números del 1 al 4?
+

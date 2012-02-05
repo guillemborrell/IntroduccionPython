@@ -272,11 +272,194 @@ escribir y cerrar un archivo.  Para ello necesitamos conocer la clase
   en el que se encuentre el script para que el mismo pueda acceder al
   entorno a partir de su posición relativa.
 
+.. note::
 
+  SAGE es un bicho raro en lo que respecta a archivos porque se trata
+  de una aplicación web.
+
+Para cargar una instancia de un objeto :class:`file` basta con
+utilizar la función :func:`open`, para la que no tenemos que importar
+ningún módulo
+
+.. code-block:: python
+
+  >>> fh = open('tipos.rst','r')
+
+El segundo argumento se refiere a los permisos con los que abrimos el
+archivo, en este caso con permisos de sólo lectura. A partir de ahí ya
+disponemos de todos los elementos necesarios para leer el archivo.
+
+.. code-block:: python
+
+  >>> print fh.readline()
+  Tipos, o cómo programar en Python
+  
+  >>> print fh.readline()
+  =================================
+
+En este caso la variable ``fh`` dipone de los métodos necesarios tanto
+para leer línea a línea o devolver cada una de las líneas del archivo
+como una lista o para leerlo byte a byte en un estilo más parecido a
+C.
+
+La misma clase que nos permite escribir archivos también nos permite
+leerlos, siempre que se trate de texto.
+
+Al final debemos acordarnos de cerrar el archivo para no ir perdiendo
+memoria por ahí.
+
+.. code-block:: python
+
+  >>> fh.close()
+
+Formato binario
+...............
+
+Uno puede leer y escribir números como si fuera texto, uno es libre de
+hacerlo, pero es una estupidez de un tamaño tan estremecedor que
+debería estar tipificado como delito con pena de cárcel. Si uno quiere
+guardar números, como una matriz o una ristra de datos, lo mejor es
+guardarlo en formato binario del mismo modo que el sistema lo
+representa en memoria. Es sin duda la manera más eficiente de
+hacerlo.
+
+Esto es independiente de cómo se abra, se lea, o se cierre el
+archivo. El archivo no es distinto, lo único que cambia es su
+contenido.
+
+Esto abre una casuística sobre cómo representar los números y los
+metadatos asociados como las dimensiones o la precisión. Por suerte
+:mod:`numpy` y los módulos :mod:`pickle` y :mod:`cpickle` harán el
+trabajo sucio por nosotros.
 
 La clase :class:`list`
 ----------------------
 
+Ya hemos hablado sobre las listas pero es importante que les demos un
+segundo vistazo.
+
+Lo más importante que debemos saber de una lista es que **no es un
+array**. No es una buena idea hacer operaciones aritméticas sobre los
+elementos de una lista porque son una secuencia de elementos que no
+necesariamente tienen el mismo tipo. Python lo sabe y se va a negar
+porque no puede multiplicar una letra por un número en coma flotante.
+
+Sin embargo las listas son quizás el tipo más utilizado en Python
+porque son una manera muy eficiente de operar sobre listas de
+cosas. 
+
+.. code-block:: python
+
+  >>> l = str('this is a list of words').split()
+  >>> print l
+  ['this', 'is', 'a', 'list', 'of', 'words']
+  >>> l.extend('that I extend now'.split())
+  >>> print l
+  ['this', 'is', 'a', 'list', 'of', 'words', 'that', 'I', 'extend', 'now']
+
+Indexación
+..........
+
+Ya hemos visto cómo funcionan los subíndices
+
+.. code-block:: python
+
+  >>> l.index('list')
+  3
+  >>> l[3]
+  'list'
+
+Lo que aún no sabemos hacer es seleccionar una secuencia dentro de la
+lista a partir de los índices. Ahí debemos pararnos un instante porque
+si se entiende bien a la primera no se albergarán dudas al respecto en
+un futuro.
+
+Cuando en vez de refernrnos a un elemento nos referimos a una
+secuencia dentro de la lista, un *slice*, no nos referimos a los
+índices sino a los intervalos que hay entre los elementos. Esto
+significa que el primer elemento, el de índice 0, corresponde al
+*slice* 0-1. El tercer elemento, de índice 2, corresponde al *slice*
+2-3.
+
+.. code-block:: python
+
+  >>> l[0:1]
+  ['this']
+  >>> l[2:3]
+  ['a']
+  >>> l[9:10]
+  ['now']
+
+Aunque podemos acceder al último elemento tal como se muestra en el
+ejemplo, disponemos de un atajo para no tener que saber cómo de larga
+es la lista que mejora si recordamos que podemos utilizar índices
+negativos:
+
+.. code-block:: python
+
+  >>> l[:1]
+  ['this']
+  >>> l[-1:]
+  ['now']
+ 
+La cosa se puede complicar. Supongamos que queremos los elementos
+entre el tercero y el antepenúltimo
+
+.. code-block:: python
+
+  >>> l[2:-2]
+  ['a', 'list', 'of', 'words', 'that', 'I']
+
+Y que encima los queremos en el órden inverso
+
+.. code-block:: python
+
+  >>> l[-2:2:-1]
+  ['extend', 'I', 'that', 'words', 'of', 'list']
+
+Supongo que con esto es suficiente
+
+Cualquier objeto que disponga de la función :func:`__getitem__` puede
+indexarse y si dispone también de la función :func:`__getslice__`
+podremos también obtener secuencias.  Hay un montón de clases que
+disponen de estos dos métodos como :class:`str`, :class:`tuple` o, la
+que más nos interesa a nosotros, :class:`array`
+
 Comprehension expressions
--------------------------
+.........................
+
+Algunas veces queremos generar una lista a través de una secuencia y
+una condición más o menos compleja que no se reduce a alguno de los
+métodos de una lista.  Por ejemplo obtener de la lista de palabras
+anterior y por orden las palabras que contienen la letra *o*. Podemos
+hacerlo mediante un bucle.
+
+.. code-block:: python
+
+  >>> for w in l:
+  ...     if 'o' in w:
+  ...         s.append(w)
+  ... 
+  >>> print s
+  ['of', 'words', 'now']
+
+O podemos generar directamente la lista con un *comprehension*
+
+.. code-block:: python
+
+  >>> s = [w for w in l if 'o' in w]
+  >>> print s
+  ['of', 'words', 'now']
+
+La sintaxis de estas sentencias generadoras es prácticamente la frase
+en inglés: la palabra para cada palabra en la lista si la letra está
+en la palabra. Sencillo.
+
+También nos permite empezar a utilizar la sintaxis de Python como
+auténticos profesionales.
+
+.. code-block:: python
+
+  >>> print str(' ').join([w.capitalize() for w in l])
+  'This Is A List Of Words That I Extend Now'
 
