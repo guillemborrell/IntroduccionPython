@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = sphinx-build
+SPHINXBUILD   = /apps/epd-7.2-2-rh5-x86_64/bin/sphinx-build
 PAPER         =
 BUILDDIR      = _build
 

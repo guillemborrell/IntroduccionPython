@@ -212,6 +212,8 @@ class Vorticity2DSerial(Vorticity2D):
             
         self.t += self.dt
 
+    def cleanup(self):
+        rhs_tur2d.cleanup()
 
 
 def test_tur2d(fign,Lx,Ly,nsteps):
@@ -247,12 +249,19 @@ def test_tur2d(fign,Lx,Ly,nsteps):
 
     V.set_initial(omega)
     V.t = 0
+    j = 0
 
     for i in range(nsteps):
+        tstamp = datetime.now()
         V.step()
-        if i%100 == 0:
-            print i,'/',nsteps
+        if i%40 == 0:
+            print i,'/',nsteps,(datetime.now()-tstamp).total_seconds()
+            datfile = open('/data/tur2d/tur2dbig{:05d}.npy'.format(j),'w')
+            numpy.save(datfile,V.omega)
+            datfile.close()
+            j += 1
 
+    V.cleanup()
     return V
 
 
@@ -286,4 +295,4 @@ def test_kh(fign,Lx,Ly,nsteps):
 
 if __name__ == '__main__':
 
-    vort = test_tur2d(1,16.0,16.0,2000)
+    vort = test_tur2d(1,32.0,32.0,40000)
