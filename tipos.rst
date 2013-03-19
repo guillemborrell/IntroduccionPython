@@ -43,7 +43,7 @@ comillas simples o comillas dobles.
 .. code-block:: python 
 
   >>> a = 'string'
-  >>> b = 'string'
+  >>> b = "string"
 
 o bien podemos crear cadenas de caracteres vacías
 
